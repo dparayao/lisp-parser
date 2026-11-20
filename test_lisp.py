@@ -1,6 +1,6 @@
 import unittest
  
-from lisp import parse
+from lisp import ParseError, parse
  
  
 class TestParse(unittest.TestCase):
@@ -42,5 +42,37 @@ class TestParse(unittest.TestCase):
         self.assertIsInstance(parse("3.14"), float)
  
  
+class TestParseErrors(unittest.TestCase):
+    """Malformed inputs that should raise ParseError."""
+
+    INVALID = [
+        # empty input
+        "",
+        "   ",
+        "\n\t",
+        # unbalanced: missing close paren
+        "(",
+        "(+ 1 2",
+        "((a)",
+        "(first (list 1 (+ 2 3) 9)",
+        # unbalanced: extra / stray close paren
+        ")",
+        "(+ 1 2))",
+        ")(",
+        "a)",
+        # trailing tokens after a complete expression
+        "1 2",
+        "(a) (b)",
+        "(+ 1 2) x",
+        "x (+ 1 2)",
+    ]
+
+    def test_invalid_inputs(self):
+        for source in self.INVALID:
+            with self.subTest(source=source):
+                with self.assertRaises(ParseError):
+                    parse(source)
+
+
 if __name__ == "__main__":
     unittest.main()
